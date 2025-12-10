@@ -1,19 +1,19 @@
 
 ---
 
-# **Enterprise RAG Copilot**
+# **Web RAG Copilot**
 
 ## 📋 Overview
 
-**Enterprise RAG Copilot** is a production-ready Generative AI application designed for secure, scalable enterprise environments. It features a Multi-Agent LLM architecture (powered by **Llama 3** via Groq) capable of orchestrating external web search (Tavily) and internal knowledge base retrieval (RAG).
+**Web RAG Copilot** is a production-ready Generative AI application designed for secure, scalable enterprise environments. It features a Multi-Agent LLM architecture (powered by **Llama 3** via Groq) capable of real-time **web retrieval** through the Tavily Search API.
 
-The project highlights a robust **MLOps/LLMOps** pipeline that automates the lifecycle from code commit to serverless deployment on **AWS Fargate**, ensuring high code quality via **SonarQube** gates.
+The system is engineered with a robust **MLOps/LLMOps pipeline**, performing continuous integration, code quality checks (SonarQube), automated Docker builds, and serverless deployment on **AWS Fargate**.
 
 ---
 
 ## 🏗 Architecture
 
-The system implements a GitOps workflow integrating Jenkins, Docker, and AWS.
+The application uses a GitOps workflow integrating Jenkins, Docker, and AWS.
 
 ### Architecture Flow
 
@@ -32,7 +32,7 @@ graph LR
         direction TB
         Streamlit[🖥️ Streamlit UI<br/>Frontend]
         FastAPI[⚙️ FastAPI<br/>Backend API]
-        LangGraph[🧠 LangGraph Agent<br/>Orchestration Logic]
+        LangGraph[🧠 LangGraph Multi-Agent Logic]
         
         Streamlit -->|HTTP/JSON| FastAPI
         FastAPI --> LangGraph
@@ -65,11 +65,12 @@ graph LR
 
 ## 🚀 Key Features
 
-* **Multi-Agent Orchestration:** Intelligently routes queries between Web Search and Internal RAG.
-* **Automated CI/CD:** Zero-touch deployment pipeline triggered by GitHub webhooks.
-* **Quality Gates:** Deployment automatically blocked if code quality fails SonarQube checks.
-* **Scalable Infrastructure:** Deployed on AWS Fargate for auto-scaling capabilities.
-* **Security:** IAM Role-based authentication (no hardcoded AWS keys in code).
+* **Web RAG Multi-Agent System:** Intelligent routing of queries to real-time web search using Tavily.
+* **Fast LLM Inference:** Powered by Groq’s ultra-low-latency Llama 3 deployment.
+* **Automated CI/CD Pipeline:** End-to-end integration using Jenkins, GitHub, and AWS.
+* **Code Quality Enforcement:** SonarQube quality gates block low-quality deployments.
+* **Scalable Infrastructure:** Serverless execution via AWS Fargate with automatic scaling.
+* **Secure Credentials:** IAM roles and environment-based secrets (no hardcoded keys).
 
 ---
 
@@ -91,15 +92,17 @@ graph LR
 
 ### Prerequisites
 
-* Docker & Docker Compose installed.
+* Docker & Docker Compose installed
 * Python 3.10+
-* AWS CLI configured (for deployment testing).
+* AWS CLI configured (optional for deployment testing)
+
+---
 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/amir-khosravi/enterprise-rag-copilot.git
-cd enterprise-rag-copilot
+git clone https://github.com/amir-khosravi/web-rag-copilot.git
+cd web-rag-copilot
 ```
 
 ### 2. Configure Environment
@@ -109,42 +112,44 @@ Create a `.env` file in the root directory:
 ```bash
 GROQ_API_KEY="your_groq_key"
 TAVILY_API_KEY="your_tavily_key"
-PROJECT_NAME="Enterprise RAG Copilot"
+PROJECT_NAME="Web RAG Copilot"
 BACKEND_HOST="http://localhost:8000"
 ```
 
 ### 3. Run Locally (Docker)
 
-Use the included runner script to spin up both Frontend and Backend services:
+Use the included runner script to run both services:
 
 ```bash
 python dev_runner.py
 ```
 
 * **Frontend:** [http://localhost:8501](http://localhost:8501)
-* **Backend Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
+* **Backend API Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---
 
 ## ⚙️ CI/CD Pipeline Configuration
 
-This repository includes a `Jenkinsfile` defining the following automated stages:
+The repository includes a `Jenkinsfile` defining the automated pipeline:
 
-1. **SCM Checkout:** Pulls latest code from GitHub.
-2. **Code Quality Analysis:** Scans code using SonarQube; fails build on critical bugs.
-3. **Build & Push:** Builds the Docker image and pushes to AWS ECR.
-4. **Deploy:** Updates the AWS ECS Fargate service with the new image.
+1. **SCM Checkout** – pulls latest code from GitHub
+2. **SonarQube Analysis** – enforces quality gates
+3. **Docker Build & Push** – builds and pushes image to AWS ECR
+4. **Deploy Stage** – triggers an ECS Fargate service update
 
-### Setting up Jenkins (Docker-in-Docker)
+---
 
-#### 1. Build Custom Jenkins Image:
+### Jenkins (Docker-in-Docker)
+
+#### 1. Build the Custom Jenkins Image
 
 ```bash
 cd custom_jenkins
 docker build -t jenkins-dind .
 ```
 
-#### 2. Run Jenkins Container:
+#### 2. Run Jenkins
 
 ```bash
 docker run -d -p 8080:8080 -p 50000:50000 \
@@ -153,28 +158,29 @@ docker run -d -p 8080:8080 -p 50000:50000 \
   jenkins-dind
 ```
 
-#### 3. Configure Credentials:
+#### 3. Add Jenkins Credentials
 
-Add the following in the Jenkins Dashboard:
-
-* `aws-token` (AWS Access Key & Secret)
-* `github-token` (GitHub Personal Access Token)
-* `sonarqube-token` (SonarQube Auth Token)
+* `aws-token`
+* `github-token`
+* `sonarqube-token`
 
 ---
 
 ## ☁️ AWS Deployment Details
 
-The application is deployed as a serverless container on **AWS Fargate**.
+The application is deployed on **AWS Fargate** as a fully serverless container.
 
 * **Cluster:** `production-cluster`
-* **Service:** `rag-copilot-service`
-* **Networking:** VPC with public subnets and Security Groups allowing port 8501.
+* **Service:** `web-rag-copilot-service`
+* **Networking:** Public subnets + Security Groups (port 8501 exposed)
 
-### Manual Deployment (Optional)
+### Manual Deployment
 
 ```bash
-aws ecs update-service --cluster production-cluster --service rag-copilot-service --force-new-deployment
+aws ecs update-service \
+  --cluster production-cluster \
+  --service web-rag-copilot-service \
+  --force-new-deployment
 ```
 
 ---
@@ -182,5 +188,3 @@ aws ecs update-service --cluster production-cluster --service rag-copilot-servic
 ## 📝 License
 
 This project is licensed under the MIT License.
-
----
